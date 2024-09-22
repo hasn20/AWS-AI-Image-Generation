@@ -48,7 +48,7 @@ prompt = st.text_input("Enter your vision:", "")
 if st.button("Generate Vision"):
     if prompt:
         # Make a request to your backend API (replace URL with your API Gateway endpoint)
-        api_url = "https://your-api-gateway-url.amazonaws.com/generate-image"
+        api_url = "https://cixege29k6.execute-api.eu-north-1.amazonaws.com/production/generate-image"
         response = requests.post(api_url, json={"prompt": prompt})
 
         if response.status_code == 200:
