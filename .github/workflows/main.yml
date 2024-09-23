@@ -11,14 +11,14 @@ jobs:
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3  # Updated from v2 to v3
 
     - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v1
+      uses: docker/setup-buildx-action@v2  # Updated from v1 to v2
 
     - name: Log in to Amazon ECR
       run: |
-        aws ecr get-login-password --region eu-north-1 | docker login --username AWS --password-stdin 009160047179.dkr.ecr.us-east-1.amazonaws.com/ai_image_generation
+        aws ecr get-login-password --region eu-north-1 | docker login --username AWS --password-stdin 009160047179.dkr.ecr.eu-north-1.amazonaws.com/ai_image_generation  # Fixed the region and URL
 
     - name: Build, tag, and push Docker image
       run: |
