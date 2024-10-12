@@ -3,29 +3,42 @@ name: Build and Deploy to ECS
 on:
   push:
     branches:
-      - main
+      - main  # Change this if your main branch has a different name
+
+env:
+  AWS_REGION: us-east-1  # Confirm this is your desired AWS region
+  ECR_REPOSITORY: ai_image_generation  # Confirm or change this to match your ECR repository name
+  ECS_CLUSTER: ai-image-gen  # Confirm or change to your ECS cluster name
+  ECS_SERVICE: ai-image  # Confirm or change to your ECS service name
 
 jobs:
-  build:
+  build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v3  # Updated from v2 to v3
+      uses: actions/checkout@v3
 
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v2  # Updated from v1 to v2
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ env.AWS_REGION }}
 
-    - name: Log in to Amazon ECR
+    - name: Login to Amazon ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v1
+
+    - name: Build, tag, and push image to Amazon ECR
+      env:
+        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        IMAGE_TAG: ${{ github.sha }}
       run: |
-        aws ecr get-login-password --region eu-north-1 | docker login --username AWS --password-stdin 009160047179.dkr.ecr.eu-north-1.amazonaws.com/ai_image_generation  # Fixed the region and URL
+        cd public  # Ensure this matches your project structure
+        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
 
-    - name: Build, tag, and push Docker image
+    - name: Update ECS service
       run: |
-        docker build -t 009160047179.dkr.ecr.eu-north-1.amazonaws.com/image-generation-frontend:latest .
-        docker tag 009160047179.dkr.ecr.eu-north-1.amazonaws.com/image-generation-frontend:latest
-        docker push 009160047179.dkr.ecr.eu-north-1.amazonaws.com/image-generation-frontend:latest
-
-    - name: Deploy to ECS
-      run: |
-        aws ecs update-service --cluster ai-image-gen --service ai-image --force-new-deployment
+        aws ecs update-service --cluster ${{ env.ECS_CLUSTER }} --service ${{ env.ECS_SERVICE }} --force-new-deployment

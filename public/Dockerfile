@@ -4,7 +4,7 @@ FROM python:3.9-slim
 # Set the working directory inside the container to /app
 WORKDIR /app
 
-# Copy the current directory contents into the container at /app
+# Copy the contents of the public directory into the container at /app
 COPY . /app
 
 # Install any Python packages that are listed in requirements.txt

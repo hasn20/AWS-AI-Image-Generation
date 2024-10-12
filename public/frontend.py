@@ -6,63 +6,129 @@ from io import BytesIO
 # Custom CSS for styling
 st.markdown("""
     <style>
-    .stTextInput>div>div>input {
-        border-radius: 10px;
-        border: 2px solid #333;
-        padding: 10px;
-        font-size: 18px;
-        font-family: 'Arial', sans-serif;
-        box-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+    /* Main background styling */
+    .main {
+        background-color: #1a1a1a;
+        color: #f0f0f0;
     }
-    .stButton>button {
-        background: linear-gradient(45deg, #00ff99, #00ccff);
-        border: none;
-        border-radius: 50px;
-        color: white;
+
+    /* Centering title and making it pop */
+    h1 {
+        color: #0ff;
+        font-size: 3em;
+        text-align: center;
+        font-family: 'Orbitron', sans-serif;
+        text-shadow: 0 0 20px #0ff, 0 0 30px #0ff;
+        margin-bottom: 30px;
+    }
+
+    /* Text input customization */
+    .stTextInput > div > div > input {
+        background-color: #333;
+        color: #0ff;
+        border: 2px solid #0ff;
+        border-radius: 10px;
         padding: 10px 20px;
-        font-size: 20px;
-        font-family: 'Arial', sans-serif;
-        box-shadow: 0 0 15px rgba(0, 255, 255, 0.8);
-        cursor: pointer;
-        transition: all 0.3s ease;
+        font-size: 18px;
+        font-family: 'Roboto', sans-serif;
     }
-    .stButton>button:hover {
-        background: linear-gradient(45deg, #00ccff, #00ff99);
-        box-shadow: 0 0 20px rgba(0, 255, 255, 1);
-    }
-    .stImage>img {
+
+    /* Generate button with neon hover effect */
+    .stButton > button {
+        background-color: #0ff;
+        color: #333;
+        border: 2px solid #0ff;
         border-radius: 10px;
-        border: 2px solid #333;
-        box-shadow: 0 0 20px rgba(0, 255, 255, 0.7);
+        padding: 10px 20px;
+        font-size: 18px;
+        font-family: 'Orbitron', sans-serif;
+        transition: 0.3s ease;
+        text-shadow: 0 0 10px #0ff;
+    }
+    .stButton > button:hover {
+        background-color: #333;
+        color: #0ff;
+        border: 2px solid #0ff;
+        box-shadow: 0 0 20px #0ff, 0 0 30px #0ff;
+        cursor: pointer;
+    }
+
+    /* Footer styling */
+    footer {
+        text-align: center;
+        color: #0ff;
+        font-size: 16px;
+        font-family: 'Roboto', sans-serif;
+    }
+
+    /* Customize container margins */
+    .block-container {
+        padding: 2rem 2rem 2rem 2rem;
+    }
+
+    /* Add animations for interactive elements */
+    @keyframes glow {
+        0% {
+            box-shadow: 0 0 5px #0ff, 0 0 10px #0ff, 0 0 20px #0ff, 0 0 40px #00f;
+        }
+        50% {
+            box-shadow: 0 0 10px #0ff, 0 0 20px #0ff, 0 0 40px #00f, 0 0 80px #00f;
+        }
+        100% {
+            box-shadow: 0 0 5px #0ff, 0 0 10px #0ff, 0 0 20px #0ff, 0 0 40px #00f;
+        }
+    }
+
+    /* Image container for generated images */
+    .stImage {
+        animation: glow 1.5s infinite ease-in-out;
+        margin-top: 30px;
     }
     </style>
+
+    <!-- Linking external fonts for futuristic design -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron&family=Roboto&display=swap" rel="stylesheet">
     """, unsafe_allow_html=True)
 
-# Title of the app
-st.title("Ethereal Visions AI Image Generation")
+# Main app
+def main():
+    st.title("AI Image Generator")
 
-# Sleek Text Input
-prompt = st.text_input("Enter your vision:", "")
+    st.write("Enter your prompt and see it transform into a stunning AI-generated image!")
 
-# Neon Glow Button
-if st.button("Generate Vision"):
-    if prompt:
-        # Make a request to your backend API (replace URL with your API Gateway endpoint)
-        api_url = "https://cixege29k6.execute-api.eu-north-1.amazonaws.com/production/generate-image"
-        response = requests.post(api_url, json={"prompt": prompt})
+    # Text input for prompt
+    prompt = st.text_input("Enter your image description:", "")
 
-        if response.status_code == 200:
-            # Get the image URL from the response
-            image_url = response.json().get("image_url")
-            
-            if image_url:
-                # Fetch and display the image
-                image_response = requests.get(image_url)
-                image = Image.open(BytesIO(image_response.content))
-                st.image(image, caption="Generated Vision", use_column_width=True)
-            else:
-                st.error("Image generation failed. Please try again.")
+    # Generate button
+    if st.button("Generate Image"):
+        if prompt:
+            with st.spinner("Generating image..."):
+                try:
+                    # API call (replace with your actual API endpoint)
+                    api_url = "https://toahtdud0g.execute-api.us-east-1.amazonaws.com/prod/generate-image"
+                    response = requests.post(api_url, json={"prompt": prompt}, timeout=30)
+
+                    if response.status_code == 200:
+                        response_data = response.json()
+                        image_url = response_data.get("image_url")
+
+                        if image_url:
+                            image_response = requests.get(image_url)
+                            image = Image.open(BytesIO(image_response.content))
+                            st.image(image, caption="Generated Image", use_column_width=True)
+                        else:
+                            st.error("No image URL in the response. Please try again.")
+                    else:
+                        st.error(f"API request failed. Status code: {response.status_code}")
+
+                except Exception as e:
+                    st.error(f"An error occurred: {str(e)}")
         else:
-            st.error("Failed to communicate with the API. Please try again later.")
-    else:
-        st.warning("Please enter a prompt before clicking 'Generate Vision'.")
+            st.warning("Please enter a description before generating an image.")
+
+    # Footer
+    st.markdown("---")
+    st.markdown("<footer>Created by AI Image Generator | Transform your ideas into stunning visuals</footer>", unsafe_allow_html=True)
+
+if __name__ == "__main__":
+    main()
