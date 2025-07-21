@@ -100,4 +100,3 @@ The application sends prompts to an external API endpoint for image generation:
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
 
 ---
-*Created by [Your Name] | Transform your ideas into stunning visuals!*
